@@ -12,7 +12,7 @@ Default Windows 11 `System.Media.SystemSounds` are identical except `Hand` makin
 ### Usage
 `.\networkmonitor.ps1 -destination example.com -gateway 192.168.1.1 -seconds 5`
 
-All parameters optional.
+All parameters are optional.
 
 ### Shortcut
 `powershell -NoProfile -ExecutionPolicy Bypass -File ".\networkmonitor.ps1"`
