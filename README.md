@@ -18,3 +18,6 @@ All parameters are optional.
 `powershell -NoProfile -ExecutionPolicy Bypass -File ".\networkmonitor.ps1"`
 
 Runs script without loading user profiles and bypasses execution policy restrictions.
+
+### Note
+Script should be saved as `UTF-8 with BOM ` for desired output encoding since 1.1.
