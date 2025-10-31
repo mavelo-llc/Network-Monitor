@@ -10,48 +10,53 @@
 .EXAMPLE
    networkmonitor.ps1 -destination example.com -gateway 192.168.1.1
 .EXAMPLE
-   networkmonitor.ps1 -destination example.com -gateway 192.168.1.1 -delay 5
+   networkmonitor.ps1 -destination example.com -gateway 192.168.1.1 -seconds 4
 .EXAMPLE
-   networkmonitor.ps1 -d example.com -g 192.168.1.1 -s 5
+   networkmonitor.ps1 -d example.com -g 192.168.1.1 -s 4
 .NOTES
-  Version:        1.0
-  Author:         Mavelo <www.mavelo.com>
-  Creation Date:  2025-10-30
+  Version: 1.1
+  Author: Mavelo <www.mavelo.com>
+  Creation Date: 2025-10-30
 #>
 param (
-	[Alias("d","domain","i","ip")][string] $destination = "8.8.8.8",
-	[Alias("g","r","router")][string] $gateway = $null,
-	[Alias("s","delay")][int] $seconds = 5
+	[Alias("d","domain","i","ip")][String] $destination = "8.8.8.8",
+	[Alias("g","r","router")][String] $gateway = $null,
+	[Alias("s","delay")][Int] $seconds = 4
 )
-if ([string]::IsNullOrEmpty($destination)) {
-	 $gateway = "8.8.8.8"
+if ([String]::IsNullOrEmpty($destination)) {
+	 $destination = "8.8.8.8"
 }
-if ([string]::IsNullOrEmpty($gateway)) {
+if ([String]::IsNullOrEmpty($gateway)) {
 	 $gateway = (Get-NetRoute | Where-Object { $_.NextHop -ne "::" -and $_.NextHop -ne "0.0.0.0" }).NextHop | Select-Object -First 1
 }
-if ($seconds -le 0) {
-	$seconds = 5
+if (($seconds = [Math]::Ceiling($seconds)) -lt 1) {
+	$seconds = 4
 }
+Clear-Host
+Write-Host "Network Monitor 1.1 - Mavelo LLC <mavelo.com>"
 if ($destination -and $gateway -and $seconds) {
-	Write-Host "Network Monitor 1.0 - Mavelo LLC <mavelo.com>"
-	Write-Host "Destination: $destination, Gateway: $gateway, Delay: $seconds"
+	Write-Host "Destination: $destination, Gateway: $gateway, Seconds: $seconds"
+	$spinner = "⣷⣯⣟⡿⢿⣻⣽⣾".ToCharArray()
+	$i = 0
 	while ($true) {
-		$timestamp = Get-Date -format "[yyyy-MM-dd HH:mm:ss]"
+		$time = Get-Date -format "[yyyy-MM-dd HH:mm:ss]"
 		if (Test-Connection $destination -Count 1 -Quiet) {
-			Write-Host "$timestamp Connected to $destination" -ForegroundColor Green
+			Write-Host -NoNewline -ForegroundColor Green "`r$($spinner[$i])"
 			$sleep = $seconds
 		} elseif (Test-Connection $gateway -Count 1 -Quiet) {
-			Write-Host "$timestamp Connected to $gateway (no internet)" -ForegroundColor DarkYellow
-			[System.Media.SystemSounds]::Beep.Play()
+			Write-Host -NoNewline "`r$time LOST INTERNET" -ForegroundColor DarkYellow
+			Write-Host ""
 			$sleep = [Math]::Ceiling($seconds / 2)
+			[System.Media.SystemSounds]::Beep.Play()
 		} else {
-			Write-Host "$timestamp Connection failed" -ForegroundColor Red
-			[System.Media.SystemSounds]::Hand.Play()
+			Write-Host -NoNewline "`r$time LOST GATEWAY" -ForegroundColor Red
+			Write-Host ""
 			$sleep = [Math]::Ceiling($seconds / 4)
+			[System.Media.SystemSounds]::Hand.Play()
 		}
+		$i = ++$i % $spinner.Length
 		Start-Sleep -Seconds $sleep
 	}
 } else {
-	Write-Host "Destination, Gateway and Seconds required!" -ForegroundColor Red
-	[System.Media.SystemSounds]::Hand.Play()
+	throw "Destination, Gateway and Seconds parameters are required!"
 }
