@@ -2,10 +2,10 @@
 Monitors internet connectivity.
 
 ## How It Works
-* Automatic `$gateway` detection.
+* Automatic `$gateway` detection if not specified.
 * Tests `$destination` connection at `$seconds` intervals.
-* If `$destination` fails, display warning, play `Beep` sound, halve `$seconds`.
-* If `$destination` and `$gateway` fail, display error, play `Hand` sound, quarter `$seconds`.
+* If `$destination` fails, display warning, play `Beep` sound, halve interval.
+* If `$destination` and `$gateway` fail, display error, play `Hand` sound, quarter interval.
 
 Default Windows 11 `System.Media.SystemSounds` are identical except `Hand` making it our preferred _error_ sound.
 
